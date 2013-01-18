@@ -45,9 +45,9 @@ void LocationViewer::loadImages()
 	for (int i = 0; i < fileList.size(); ++i) {
 		QFileInfo fileInfo = fileList.at(i);
 		map["title"] = fileInfo.fileName();
-	    map["imageSource"] = fileInfo.filePath();
+	    map["imageSource"] = "file://"+fileInfo.filePath();
 
-		qDebug () << "Inserting "+fileInfo.filePath();
+		qDebug () << "Inserting " << map["imageSource"];
 		m_model->append(map);
 	}
 }

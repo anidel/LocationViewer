@@ -36,7 +36,7 @@ NavigationPane {
                 onSelectionChanged: {
                     var page = getSecondPage();
                     navigationPane.push(page);
-                    _app.selectionChanged(indexPath, selected)
+                    listModel.selectionChanged(indexPath, selected)
                 }
                 
                 function getSecondPage() {
@@ -54,9 +54,14 @@ NavigationPane {
                 ]
                 
                 listItemComponents: ListItemComponent {
+                    type: ""
                     // The ImageView that shows the loaded image after loading has finished without error
                     ImageView {
                         id: image
+                        
+                        horizontalAlignment: HorizontalAlignment.Fill
+                        verticalAlignment: VerticalAlignment.Fill
+                        scalingMethod: ScalingMethod.AspectFill                       
                         
                         imageSource: ListItemData.imageSource
                     }
