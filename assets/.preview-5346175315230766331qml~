@@ -3,8 +3,6 @@ import bb.cascades 1.0
 
 NavigationPane {
     id: navigationPane
-    objectName: "navigationPane"
-
     Page {
         titleBar: TitleBar {
             title : "Location viewer"
@@ -58,30 +56,14 @@ NavigationPane {
                 listItemComponents: ListItemComponent {
                     type: ""
                     // The ImageView that shows the loaded image after loading has finished without error
-                    Container {
-                        layout: DockLayout {}
+                    ImageView {
+                        id: image
                         
-                        ImageView {
-                            id: image
-                            
-                            horizontalAlignment: HorizontalAlignment.Fill
-                            verticalAlignment: VerticalAlignment.Fill
-                            scalingMethod: ScalingMethod.AspectFill                       
-                            
-                            imageSource: ListItemData.imageSource
-                        }
+                        horizontalAlignment: HorizontalAlignment.Fill
+                        verticalAlignment: VerticalAlignment.Fill
+                        scalingMethod: ScalingMethod.AspectFill                       
                         
-                        Label {
-                            verticalAlignment: VerticalAlignment.Bottom
-                            horizontalAlignment: HorizontalAlignment.Center
-                            opacity: 0.5
-                            text: ListItemData.title
-                            
-                            textStyle {
-                                fontSize: FontSize.XXSmall
-                                color: Color.Green
-                            }
-                        }
+                        imageSource: ListItemData.imageSource
                     }
                 }                       
             }
@@ -96,6 +78,4 @@ NavigationPane {
         // don't forget to enable screen rotation in bar-bescriptor.xml (Application->Orientation->Auto-orient)
         OrientationSupport.supportedDisplayOrientation = SupportedDisplayOrientation.All;
     }
-    
-    onPopTransitionEnded: { page.destroy(); }
 }
