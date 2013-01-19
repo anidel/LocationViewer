@@ -6,6 +6,8 @@
 #include <bb/cascades/AbstractPane>
 #include <bb/cascades/NavigationPane>
 #include <bb/cascades/maps/MapView>
+#include <bb/platform/geo/Point.hpp>
+#include <bb/cascades/controls/container.h>
 
 #include <libexif/exif-data.h>
 #include <libexif/exif-entry.h>
@@ -14,6 +16,7 @@
 
 using namespace bb::cascades;
 using namespace bb::cascades::maps;
+using namespace bb::platform::geo;
 
 QFileInfoList fileList;
 NavigationPane *navigationPane;
@@ -66,11 +69,11 @@ void LocationViewer::loadImages()
 	    map["title"] = fileInfo.fileName();
 	    map["imageSource"] = "file:/"+fileInfo.filePath();
 	    map["idx"] = i;
+	    map["cameraModel"] = m_cameraModel;
+	    map["dateTaken"] = m_dateTaken;
 	    map["latitude"] = m_latitude;
 	    map["longitude"] = m_longitude;
 	    map["altitude"] = m_altitude;
-
-		qDebug () << "Inserting " << map;
 
 		(*m_model) << map;
 	}
@@ -92,21 +95,21 @@ void LocationViewer::retrieveLocation (QString filename)
 	//save temp
 	char value[256]={0,};
 
-	qDebug () << "Retrieving model";
 	// Retrieve model
 	ExifEntry *ee = exif_content_get_entry(ed->ifd[EXIF_IFD_0], EXIF_TAG_MODEL);
 	exif_entry_get_value(ee, value, sizeof(value));
-	QString model(value);
-	qDebug() << model;
-
-	qDebug () << "Retrieving time it was shot";
+	m_cameraModel = QString(value);
+	qDebug () << "Camera model: " << m_cameraModel;
 
 	// Retrieve time
 	ee = exif_content_get_entry(ed->ifd[EXIF_IFD_0], EXIF_TAG_DATE_TIME);
 	exif_entry_get_value(ee, value, sizeof(value));
-	QString datetime(value);
+	QString dateTime(value);
 
-	qDebug() << datetime;
+	QDateTime dateTaken = QDateTime::fromString (dateTime, "yyyy:MM:dd HH:mm:ss");
+	m_dateTaken = dateTaken.toString("ddd d MMMM yyyy 'at' HH:mm");
+
+	qDebug() << "Taken on: " << m_dateTaken;
 
 	// Retrieve LATITUDE
 	ee = exif_content_get_entry (ed->ifd[EXIF_IFD_GPS], (ExifTag)EXIF_TAG_GPS_LATITUDE);
@@ -151,7 +154,6 @@ void LocationViewer::retrieveLocation (QString filename)
 }
 double LocationViewer::latitude() const
 {
-	qDebug () << "Latitude read: " << m_latitude;
 	return m_latitude;
 }
 
@@ -163,6 +165,16 @@ double LocationViewer::longitude() const
 double LocationViewer::altitude() const
 {
 	return m_altitude;
+}
+
+QString LocationViewer::cameraModel() const
+{
+	return m_cameraModel;
+}
+
+QString LocationViewer::dateTaken() const
+{
+	return m_dateTaken;
 }
 
 double LocationViewer::Rational2Double ( unsigned char *data, int offset, ExifByteOrder order ) const
@@ -201,29 +213,41 @@ void LocationViewer::map (QVariantList idx)
 {
 	if (!mapView) {
 	    mapView = (MapView*)navigationPane->findChild<MapView *>("mapView");
-	    qDebug () << "Found mapView";
 	} else {
-		qDebug () << "mapView not found";
-
 		return;
 	}
-
-	qDebug () << idx;
 
 	if (idx.count() == 0) {
 		return;
 	}
-	qDebug () << idx.at(0).toInt(NULL);
-
-	qDebug () << m_model->data(idx);
-	qDebug () << m_model->data(idx).toMap()["latitude"].toDouble(NULL);
-	qDebug () << m_model->data(idx).toMap()["longitude"].toDouble(NULL);
 
 	m_longitude = m_model->data(idx).toMap()["longitude"].toDouble(NULL);
 	m_latitude = m_model->data(idx).toMap()["latitude"].toDouble(NULL);
+}
 
-//	if (latitude > -999999.99) {
-//		mapView->setLatitude(latitude);
-//		mapView->setLongitude(longitude);
-//	}
+QString LocationViewer::worldToPixelInvokable(QObject* mapObject, double lat, double lon) {
+	MapView* mapview = qobject_cast<MapView*>(mapObject);
+	Point worldCoordinates = Point(lat, lon);
+	QPoint pixels = mapview->worldToWindow(worldCoordinates);
+
+	int x = pixels.x();
+	int y = pixels.y();
+
+	return (QString::number(x) + " " + QString::number(y));
+}
+
+void LocationViewer::updateMarkers(QObject* mapObject, QObject* containerObject) {
+	MapView* mapview = qobject_cast<MapView*>(mapObject);
+	Container* container = qobject_cast<Container*>(containerObject);
+	for (int i = 0; i < container->count(); i++) {
+		QPoint xy = worldToPixel(mapview, container->at(i)->property("lat").value<double>(), container->at(i)->property("lon").value<double>());
+		container->at(i)->setProperty("x", xy.x());
+		container->at(i)->setProperty("y", xy.y());
+	}
+}
+
+QPoint LocationViewer::worldToPixel(QObject* mapObject, double lat, double lon) {
+	MapView* mapview = qobject_cast<MapView*>(mapObject);
+	Point worldCoordinates = Point(lat, lon);
+	return mapview->worldToWindow(worldCoordinates);
 }

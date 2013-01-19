@@ -23,15 +23,11 @@ class LocationViewer : public QObject
 
     // The model that contains the progress and image data
     Q_PROPERTY(bb::cascades::DataModel* model READ model CONSTANT)
-
-    Q_PROPERTY(double latitude READ latitude NOTIFY latitudeChanged)
-    Q_PROPERTY(double longitude READ longitude NOTIFY longitudeChanged)
-    Q_PROPERTY(double altitude READ altitude NOTIFY altitudeChanged)
-
-Q_SIGNALS:
-	void latitudeChanged();
-    void longitudeChanged();
-    void altitudeChanged();
+    Q_PROPERTY(double latitude READ latitude CONSTANT)
+    Q_PROPERTY(double longitude READ longitude CONSTANT)
+    Q_PROPERTY(double altitude READ altitude CONSTANT)
+    Q_PROPERTY(QString cameraModel READ cameraModel CONSTANT)
+    Q_PROPERTY(QString dateTaken READ dateTaken CONSTANT)
 
 private:
     // The model that contains the progress and image data
@@ -48,15 +44,24 @@ public:
 
     // This method is called to start the loading of all images.
     Q_INVOKABLE void loadImages();
+    Q_INVOKABLE QString worldToPixelInvokable(QObject* , double , double );
+    Q_INVOKABLE void updateMarkers(QObject* , QObject*);
+
+    QPoint worldToPixel(QObject* mapObject, double lat, double lon);
 
     // Location
     double m_latitude;
     double m_longitude;
     double m_altitude;
+    QString m_cameraModel;
+    QString m_dateTaken;
 
     double latitude() const;
     double longitude() const;
     double altitude() const;
+    QString cameraModel() const;
+    QString dateTaken() const;
+
     double Rational2Double ( unsigned char *, int , ExifByteOrder  ) const;
 
     Q_INVOKABLE void map (QVariantList idx);

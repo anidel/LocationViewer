@@ -22,28 +22,64 @@ Page
         {
         }
         
-        MapView
-        {
-            id: mapView
-            objectName: "mapView"
-            
-            preferredWidth: 720
-            preferredHeight: 400
-            horizontalAlignment: HorizontalAlignment.Center
-            verticalAlignment: VerticalAlignment.Bottom
-
-            altitude: 3000
-            latitude: 51.4818
-            longitude: -0.2905
+        Container {
+            layout: DockLayout {}
+            MapView
+            {
+                id: mapView
+                objectName: "mapView"
+                            
+                layoutProperties: StackLayoutProperties {}
+                preferredHeight: 450
+                            
+                horizontalAlignment: HorizontalAlignment.Center
+                verticalAlignment: VerticalAlignment.Bottom
+                            
+                altitude: 3000
+                latitude: 51.4818
+                longitude: -0.2905
+                
+                onRequestRender: {
+                    pinContainer.updateMarkers();
+                }            
+            }
+            Container {
+                id: pinContainer
+                // Must match the mapview width and height and position
+                preferredHeight: 450
+                //touchPropagationMode: TouchPropagationMode.PassThrough
+                overlapTouchPolicy: OverlapTouchPolicy.Allow
+                property variant me
+                layout: AbsoluteLayout {
+                }
+                function addPin(lat, lon) {
+                    var marker = pin.createObject();
+                    marker.lat = lat;
+                    marker.lon = lon;
+                    var xy = listModel.worldToPixelInvokable(mapView, marker.lat, marker.lon);
+                    marker.x = xy.split(" ")[0];
+                    marker.y = xy.split(" ")[1];
+                    pinContainer.add(marker);
+                    marker.animDrop.play();
+                }
+                function updateMarkers() {
+                    listModel.updateMarkers(mapView, pinContainer);
+                }
+            }
         }
         
         // The ListView that shows the progress of loading and result images
         ListView
         {
             id: listViewMapMode
+            layoutProperties: AbsoluteLayoutProperties 
+            {
+                positionY: 408
+            }
+            
             layout: StackListLayout
             {
-                orientation: LayoutOrientation.LeftToRight
+                orientation: LayoutOrientation.TopToBottom
             }
             
             property int currentIndexInSection
@@ -69,8 +105,15 @@ Page
                 onScrollingChanged: {
                     if (!scrolling) {
                         listModel.map (firstVisibleItem);
-                        mapView.latitude = listModel.latitude;
-                        mapView.longitude = listModel.longitude;
+                        if (listModel.latitude > -999999.99)
+                        {
+                            mapView.latitude = listModel.latitude;
+                            mapView.longitude = listModel.longitude;
+                            pinContainer.removeAll ();
+                            pinContainer.addPin(listModel.latitude,listModel.longitude)
+                        } else {
+                            mapView.opacity = 0.5;
+                        }
                     }
                 }
             }
@@ -80,20 +123,14 @@ Page
                 Container
                 {
                     background: Color.White
-                    preferredWidth: 768
+                    preferredHeight: 690
+
                     horizontalAlignment: HorizontalAlignment.Center
+                    verticalAlignment: VerticalAlignment.Center
                     
                     layout: DockLayout
                     {}
-                    
-//                    onTouch: {
-//                        ListItem.view.currentIndexInSection = ListItem.indexInSection;
-//                        ListItem.view.sectionSize = ListItem.sectionSize
-//                        ListItem.view.map.latitude = ListItemData.latitude;
-//                        ListItem.view.map.longitude = ListItemData.longitude;
-//                        ListItem.view.map.altitude = ListItemData.altitude;
-//                    }
-                    
+
                     // The ImageView that shows the loaded image after loading has finished without error
                     ImageView
                     {
@@ -111,7 +148,7 @@ Page
                         horizontalAlignment: HorizontalAlignment.Center
                         verticalAlignment: VerticalAlignment.Bottom
                         
-                        text: "Image no: "+ListItemData.idx + "\n"+ListItemData.title;
+                        text: "Camera model: "+ListItemData.cameraModel + "\nDate taken: "+ListItemData.dateTaken;
                         multiline: true;
                         textStyle {
                             color: Color.Green
@@ -122,4 +159,10 @@ Page
             }
         }
     }
+    attachedObjects: [
+        ComponentDefinition {
+            id: pin
+            source: "pin.qml"
+        }
+    ]
 }
