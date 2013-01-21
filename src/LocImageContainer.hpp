@@ -13,46 +13,52 @@
  * limitations under the License.
  */
 
-#ifndef QLOCIMAGECONTAINER_HPP
-#define QLOCIMAGECONTAINER_HPP
+#ifndef LOCIMAGECONTAINER_HPP
+#define LOCIMAGECONTAINER_HPP
 
 #include <QtGui/QImage>
 #include <QMetaType>
 
-class QLocImageContainer
+class LocImageContainer
 {
 public:
-	QLocImageContainer();
-	QLocImageContainer(const QLocImageContainer &other);
-    ~QLocImageContainer();
+	LocImageContainer();
+	LocImageContainer(const LocImageContainer &other);
+    ~LocImageContainer();
 
-    QLocImageContainer(const QImage &image);
+    LocImageContainer(const QImage &image);
 
     void setImage (QImage);
+    void setLocationAvailable (bool);
 	void setLatitude (double);
 	void setLongitude (double);
 	void setAltitude (double);
+	void setExifDataAvailable (bool);
 	void setCameraModel (QString);
 	void setMake (QString);
 	void setDateTaken (QString);
 
 	QImage image () const;
+	bool isLocationAvailable() const;
 	double latitude () const;
 	double longitude () const;
 	double altitude () const;
+	bool isExifDataAvailable () const;
 	QString cameraModel () const;
 	QString make () const;
 	QString dateTaken () const;
 
 private:
+	bool m_locationAvailable;
 	QImage m_image;
 	double m_latitude;
 	double m_longitude;
 	double m_altitude;
+	bool m_exifDataAvailable;
 	QString m_make;
 	QString m_cameraModel;
 	QString m_dateTaken;
 };
 
-Q_DECLARE_METATYPE(QLocImageContainer);
+Q_DECLARE_METATYPE(LocImageContainer);
 #endif

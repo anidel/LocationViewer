@@ -6,22 +6,21 @@ NavigationPane {
     objectName: "navigationPane"
     peekEnabled: false
     
-    Page {
+    Page {        
         titleBar: TitleBar {
             title : "Location viewer"
         }
-        
         // page with a picture thumbnail
         Container {
             background: Color.LightGray
             layout: DockLayout {
             }
-            
+                                    
             ListView {
                 id: listView
                 layout: GridListLayout {
-                    verticalCellSpacing: 8
-                    horizontalCellSpacing: 8
+                    verticalCellSpacing: 4
+                    horizontalCellSpacing: 4
                     columnCount: 2
                 }
                 
@@ -38,43 +37,17 @@ NavigationPane {
                 }
                 
                 onSelectionChanged: {
-//                    var page = getSecondPage();                    
-//                    navigationPane.push(page);
                     listModel.selectionChanged(indexPath, selected)
                 }
-                
-                function getSecondPage() {
-                    if (! secondPage) {
-                        secondPage = secondPageDefinition.createObject();
-                    }
-                    return secondPage;
-                }
-                
-                attachedObjects: [
-                    ComponentDefinition {
-                        id: secondPageDefinition
-                        
-                        source: "mapViewPage.qml"
-                    },                    
-                    // This handler is tracking the scroll state of the ListView.
-                    ListScrollStateHandler {
-                        id: scrollStateHandler
-                        
-                        onScrollingChanged: {
-                            if (!scrolling) {
-//                                listModel 
-                            }
-                        }
-                    }
-                ]
-                
+                                
                 listItemComponents: ListItemComponent {
                     type: ""
-                    
+
                     // The ImageView that shows the loaded image after loading has finished without error
                     Container {
                         layout: DockLayout {}
-
+                        horizontalAlignment: HorizontalAlignment.Fill
+                        verticalAlignment: VerticalAlignment.Fill
                         
                         // The ActivityIndicator that is only active and visible while the image is loading
                         ActivityIndicator {
@@ -86,19 +59,65 @@ NavigationPane {
                             running: ListItemData.loading
                         }
                         
-                        ImageView {
-                            id: image
+                        Container {
+                            layout: StackLayout {}
+                            topPadding: 14
+                            leftPadding: 14
+                            bottomPadding: 16
+                            rightPadding: 16
                             
+                            ImageView {
+                                id: image
+                                
+                                horizontalAlignment: HorizontalAlignment.Left
+                                verticalAlignment: VerticalAlignment.Top
+                                scalingMethod: ScalingMethod.AspectFill
+                                
+                                image: ListItemData.image
+                                visible: !ListItemData.loading && ListItemData.label == ""
+                                
+                                onCreationCompleted: {
+                                    ListItemData.load();
+                                }
+                                
+                                animations: [
+                                    SequentialAnimation {
+                                        id: bounceAnimation
+                                        ScaleTransition {
+                                            id: animFocus
+                                            fromX: 1
+                                            toX: .8
+                                            fromY: 1
+                                            toY: .8
+                                            duration: 150
+                                        }
+                                        ScaleTransition {
+                                            id: animUnfocus
+                                            fromX: .8
+                                            toX: 1
+                                            fromY: .8
+                                            toY: 1
+                                            duration: 150
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                                                    
+                        ImageView {
                             horizontalAlignment: HorizontalAlignment.Fill
                             verticalAlignment: VerticalAlignment.Fill
-                            scalingMethod: ScalingMethod.AspectFill                       
-                            
-                            image: ListItemData.image
                             visible: !ListItemData.loading && ListItemData.label == ""
+                                         
+                            imageSource: "asset:///images/overlay.amd"
+                        }
+                        
+                        ImageView {
+                            horizontalAlignment: HorizontalAlignment.Fill
+                            verticalAlignment: VerticalAlignment.Fill
+                            visible: !ListItemData.loading && ListItemData.label != ""
                             
-                            onCreationCompleted: {
-                                ListItemData.load();
-                            }
+                            imageSource: "asset:///images/picture1br.png"
                         }
                         
                         Label {
@@ -121,14 +140,6 @@ NavigationPane {
     }
 
     onCreationCompleted: {
-        // this slot is called when declarative scene is created
-        // write post creation initialization here
-        console.log("NavigationPane - onCreationCompleted()");
-
-        // enable layout to adapt to the device rotation
-        // don't forget to enable screen rotation in bar-bescriptor.xml (Application->Orientation->Auto-orient)
-        OrientationSupport.supportedDisplayOrientation = SupportedDisplayOrientation.All;
+        OrientationSupport.supportedDisplayOrientation = SupportedDisplayOrientation.DisplayPortrait;
     }
-    
-//    onPopTransitionEnded: { page.destroy(); }
 }

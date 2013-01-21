@@ -32,6 +32,7 @@ LocationViewer::LocationViewer(bb::cascades::Application *app)
 {
     // Register custom type to QML
     qmlRegisterType<ImageLoader>();
+    qmlRegisterType<QTimer>("anidel.library", 1, 0, "QTimer");
 
 	mapView = NULL;
 
@@ -72,6 +73,11 @@ void LocationViewer::loadImages()
 
 		m_model->append(new ImageLoader(QString(i), fileInfo.filePath(), this));
 	}
+
+//	// Call the load() method for each ImageLoader instance inside the model
+//	for (int row = 0; row < m_model->size(); ++row) {
+//	    qobject_cast<ImageLoader*>(m_model->value(row))->load();
+//	}
 }
 
 double LocationViewer::latitude() const

@@ -86,7 +86,7 @@ private Q_SLOTS:
     /*
      * Response handler for the image process operation.
      */
-    void onImageProcessingFinished(const QLocImageContainer &imageLocContainer);
+    void onImageProcessingFinished(const LocImageContainer &imageLocContainer);
 
 private:
     // The accessor methods of the properties

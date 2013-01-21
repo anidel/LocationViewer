@@ -67,6 +67,9 @@
     
     <!--  The category where the application appears. Either core.games or core.media. -->
     <category>core.media</category>
+    <icon>
+       <image>icon.png</image>
+    </icon>
     <configuration name="Device-Debug">
        <platformArchitecture>armle-v7</platformArchitecture>
        <asset path="arm/o.le-v7-g/LocationViewer" entry="true" type="Qnx/Elf">LocationViewer</asset>
@@ -86,17 +89,14 @@
     </configuration>
     
     <!--  The icon for the application, which should be 86x86. -->
-    <icon>
-        <image>icon.png</image>
-    </icon>
 
-    <asset path="icon.png">icon.png</asset>
     <asset path="assets">assets</asset>
     
     <!-- Locale support -->
     <asset path="translations" dest="qm">
         <include name="*.qm"/>
     </asset>
+    <asset path="icon.png">icon.png</asset>
     
     <!-- Request permission to execute native code.  Required for native applications. -->
     <permission system="true">run_native</permission>

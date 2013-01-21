@@ -15,7 +15,7 @@
 
 #include "imageloader.hpp"
 #include "imageprocessor.hpp"
-#include "QLocImageContainer.hpp"
+#include "LocImageContainer.hpp"
 
 #include <bb/ImageData>
 #include <bb/cascades/QmlDocument>
@@ -42,6 +42,7 @@ ImageLoader::ImageLoader(const QString &id, const QString &imageUrl, QObject* pa
 	, m_altitude(3000)
 	, m_cameraModel ("")
 	, m_dateTaken ("")
+	, imageProcessor (NULL)
 {
 }
 //! [0]
@@ -67,9 +68,22 @@ ImageLoader::~ImageLoader()
 //! [2]
 void ImageLoader::load()
 {
-	int id = qMetaTypeId<QLocImageContainer>();
+	if (imageProcessor != NULL) {
+//		m_image = bb::cascades::Image(imageData);
+	    emit imageChanged();
+
+	    m_label.clear();
+	    emit labelChanged();
+
+	    m_loading = false;
+	    emit loadingChanged();
+
+		return;
+	}
+
+	int id = qMetaTypeId<LocImageContainer>();
 	if (!QMetaType::isRegistered(id))
-		qRegisterMetaType<QLocImageContainer>("QLocImageContainer");
+		qRegisterMetaType<LocImageContainer>("LocImageContainer");
 
     // Setup the image processing thread
     imageProcessor = new ImageProcessor(m_imageUrl);
@@ -96,10 +110,10 @@ void ImageLoader::load()
      * allow a cross-thread boundary invocation. In this case the QImage parameter is copied in a thread-safe way
      * from the worker thread to the main thread.
      */
-    connect(imageProcessor, SIGNAL(finished(QLocImageContainer)), this, SLOT(onImageProcessingFinished(QLocImageContainer)), Qt::QueuedConnection);
+    connect(imageProcessor, SIGNAL(finished(LocImageContainer)), this, SLOT(onImageProcessingFinished(LocImageContainer)), Qt::QueuedConnection);
 
     // Terminate the thread after the processing has finished
-    connect(imageProcessor, SIGNAL(finished(QLocImageContainer)), m_thread, SLOT(quit()));
+    connect(imageProcessor, SIGNAL(finished(LocImageContainer)), m_thread, SLOT(quit()));
 
     m_thread->start();
 
@@ -187,7 +201,7 @@ void ImageLoader::load()
  * Handler for the signal indicating the result of the image processing.
  */
 //! [4]
-void ImageLoader::onImageProcessingFinished(const QLocImageContainer &imageLocContainer)
+void ImageLoader::onImageProcessingFinished(const LocImageContainer &imageLocContainer)
 {
 	QImage image = imageLocContainer.image();
 
@@ -213,12 +227,23 @@ void ImageLoader::onImageProcessingFinished(const QLocImageContainer &imageLocCo
     m_loading = false;
     emit loadingChanged();
 
-    m_latitude = imageLocContainer.latitude();
-    m_longitude = imageLocContainer.longitude();
-    m_altitude = imageLocContainer.altitude();
-    //m_make = imageLocContainer.make();
-    m_cameraModel = imageLocContainer.cameraModel();
-    m_dateTaken = imageLocContainer.dateTaken();
+    if (imageLocContainer.isLocationAvailable()) {
+    	m_latitude = imageLocContainer.latitude();
+    	m_longitude = imageLocContainer.longitude();
+    	m_altitude = imageLocContainer.altitude();
+    } else {
+       	m_latitude = -9999.99;
+    	m_longitude = -9999.99;
+    }
+
+    if (imageLocContainer.isExifDataAvailable()) {
+    	//m_make = imageLocContainer.make();
+    	m_cameraModel = imageLocContainer.cameraModel();
+    	m_dateTaken = imageLocContainer.dateTaken();
+    } else {
+    	m_cameraModel = "";
+    	m_dateTaken = "";
+    }
 }
 //! [4]
 

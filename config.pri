@@ -8,14 +8,14 @@ INCLUDEPATH +=  \
 
 SOURCES +=  \
     $$BASEDIR/src/LocationViewer.cpp \
-    $$BASEDIR/src/QLocImageContainer.cpp \
+    $$BASEDIR/src/LocImageContainer.cpp \
     $$BASEDIR/src/imageloader.cpp \
     $$BASEDIR/src/imageprocessor.cpp \
     $$BASEDIR/src/main.cpp
 
 HEADERS +=  \
     $$BASEDIR/src/LocationViewer.hpp \
-    $$BASEDIR/src/QLocImageContainer.hpp \
+    $$BASEDIR/src/LocImageContainer.hpp \
     $$BASEDIR/src/imageloader.hpp \
     $$BASEDIR/src/imageprocessor.hpp
 

@@ -33,13 +33,13 @@ ImageProcessor::ImageProcessor(const QString &imageData, QObject *parent)
 //! [1]
 void ImageProcessor::start()
 {
-	QLocImageContainer locImageContainer = process (m_data);
+	LocImageContainer locImageContainer = process (m_data);
 
 	emit finished(locImageContainer);
 }
 //! [1]
 
-QLocImageContainer ImageProcessor::process (QString filename)
+LocImageContainer ImageProcessor::process (QString filename)
 {
 	QImage image (m_data);
 
@@ -47,7 +47,7 @@ QLocImageContainer ImageProcessor::process (QString filename)
 		image = image.scaled(720, 500, Qt::KeepAspectRatioByExpanding);
 	}
 
-	QLocImageContainer locImageContainer(image);
+	LocImageContainer locImageContainer(image);
 
 	locImageContainer.setAltitude(3000.00);
 
@@ -55,8 +55,13 @@ QLocImageContainer ImageProcessor::process (QString filename)
 	ExifData *ed = exif_data_new_from_file (filename.toLocal8Bit().constData());
 
 	if (!ed) {
+		locImageContainer.setLocationAvailable(false);
+		locImageContainer.setExifDataAvailable(false);
+
 		return locImageContainer;
 	}
+
+	locImageContainer.setExifDataAvailable(true);
 
 	//save temp
 	char value[256]={0,};
@@ -95,7 +100,8 @@ QLocImageContainer ImageProcessor::process (QString filename)
 	// Retrieve LATITUDE
 	ee = exif_content_get_entry (ed->ifd[EXIF_IFD_GPS], (ExifTag)EXIF_TAG_GPS_LATITUDE);
 	if (!ee) {
-		locImageContainer.setLatitude (-9999.99);
+		locImageContainer.setLocationAvailable(false);
+		locImageContainer.setLatitude(-9999.99);
 	} else {
 		if ( ( ee && ee->components == 3 && ee->format == EXIF_FORMAT_RATIONAL ) )
 		{
@@ -110,13 +116,15 @@ QLocImageContainer ImageProcessor::process (QString filename)
 					lat = -lat;
 			}
 
+			locImageContainer.setLocationAvailable(true);
 			locImageContainer.setLatitude (lat);
 		}
 	}
 
 	ee = exif_content_get_entry (ed->ifd[EXIF_IFD_GPS], (ExifTag)EXIF_TAG_GPS_LONGITUDE);
 	if (!ee) {
-		locImageContainer.setLongitude (-9999.99);
+		locImageContainer.setLocationAvailable(false);
+		locImageContainer.setLongitude(-9999.99);
 	} else {
 		if ( ( ee && ee->components == 3 && ee->format == EXIF_FORMAT_RATIONAL ) )
 		{
@@ -131,6 +139,7 @@ QLocImageContainer ImageProcessor::process (QString filename)
 					lon = -lon;
 			}
 
+			locImageContainer.setLocationAvailable(true);
 			locImageContainer.setLongitude (lon);
 		}
 	}

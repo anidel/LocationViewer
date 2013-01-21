@@ -25,7 +25,7 @@
 #include <libexif/exif-ifd.h>
 #include <libexif/exif-content.h>
 
-#include "QLocImageContainer.hpp"
+#include "LocImageContainer.hpp"
 
 /**
  * @short A class to convert raw image data into a QImage and process it further.
@@ -59,12 +59,12 @@ Q_SIGNALS:
      *
      * @param image The processed image.
      */
-    void finished(const QLocImageContainer &qLocImage);
+    void finished(const LocImageContainer &qLocImage);
 
 private:
     // The raw image data
     QString m_data;
-    QLocImageContainer process (QString filename);
+    LocImageContainer process (QString filename);
     double Rational2Double ( unsigned char *data, int offset, ExifByteOrder order ) const;
 };
 //! [0]

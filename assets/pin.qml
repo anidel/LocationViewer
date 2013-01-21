@@ -31,7 +31,6 @@ Container {
         onFocusedChanged: {
             if (focused) {
                 animFocus.play();                               
-                root.parent.showBubble(root);                
             }
             if (! focused) {                
                 animUnfocus.play();                
